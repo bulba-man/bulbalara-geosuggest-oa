@@ -1,0 +1,34 @@
+{
+    "name": "bulbalara/geosuggest-oa",
+    "description": "Geosuggest enables you to receive search result suggestions when searching for geographical objects and/or organizations.",
+    "type": "library",
+    "minimum-stability": "stable",
+    "version": "1.0.1",
+    "autoload": {
+        "psr-4": {
+            "Bulbalara\\GeoSuggest\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Mikita Dzmitryievich",
+            "email": "dmitrievichn@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.0.0",
+        "laravel/framework": ">=7.0",
+        "open-admin-org/open-admin": "dev-bulba"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~6.0",
+        "laravel/laravel": "~7.0"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Bulbalara\\GeoSuggest\\ServiceProvider"
+            ]
+        }
+    }
+}

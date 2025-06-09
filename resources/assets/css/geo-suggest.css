@@ -1,0 +1,195 @@
+:root {
+    --geo-precision-exact-bg-color: #00a65a36;
+    --geo-precision-number-bg-color: #008da636;
+    --geo-precision-near-bg-color: #edd04047;
+    --geo-precision-range-bg-color: #e5943936;
+    --geo-precision-street-bg-color: #d798254d;
+    --geo-precision-other-bg-color: #e53f3936;
+}
+
+.geo-suggest-wrapper textarea.geo-suggest-field {
+    height: auto;
+    field-sizing: content;
+}
+.geo-suggest-wrapper .geo-suggest-field[data-precision="exact"] {
+    background-color: var(--geo-precision-exact-bg-color);
+}
+.geo-suggest-wrapper .geo-suggest-field[data-precision="number"] {
+    background-color: var(--geo-precision-number-bg-color);
+}
+.geo-suggest-wrapper .geo-suggest-field[data-precision="near"] {
+    background-color: var(--geo-precision-near-bg-color);
+}
+.geo-suggest-wrapper .geo-suggest-field[data-precision="range"] {
+    background-color: var(--geo-precision-range-bg-color);
+}
+.geo-suggest-wrapper .geo-suggest-field[data-precision="street"] {
+    background-color: var(--geo-precision-street-bg-color);
+}
+.geo-suggest-wrapper .geo-suggest-field[data-precision="other"] {
+    background-color: var(--geo-precision-other-bg-color);
+}
+.geo-suggest-wrapper .geo-suggest-block{
+    width: 100%;
+    position: relative;
+}
+.geo-suggest-wrapper .geo-suggest-block .geo-suggest-list{
+    width: 100%;
+    position: absolute;
+    top: 0;
+    z-index: 1800;
+    background: #fff;
+    left: 0;
+    padding: 0 0 0 35px;
+}
+.geo-suggest-wrapper.view-textarea .geo-suggest-block .geo-suggest-list{
+    padding: 0;
+}
+.geo-suggest-wrapper .geo-suggest-block .geo-suggest-list ul {
+    display: none;
+    padding: 5px 0;
+    list-style-type: none;
+    margin: 0;
+    border: 1px solid #ced4da;
+}
+.geo-suggest-wrapper .geo-suggest-block .geo-suggest-list.show ul {
+    display: block;
+}
+.geo-suggest-wrapper .geo-suggest-block .geo-suggest-list ul li {
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #4d4d4d;
+    border-bottom: 1px solid #ebebeb;
+    margin: 5px 0;
+}
+.geo-suggest-wrapper .geo-suggest-block .geo-suggest-list ul li:hover {
+    background: #f1f1f1;
+}
+.geo-suggest-wrapper .geo-suggest-coords {
+    max-width: 400px;
+    margin-top: .75rem;
+    margin-bottom: 20px;
+}
+.geo-suggest-wrapper .geo-suggest-coords[data-precision="exact"] .coord-value {
+    background-color: var(--geo-precision-exact-bg-color);
+}
+.geo-suggest-wrapper .geo-suggest-coords[data-precision="number"] .coord-value {
+    background-color: var(--geo-precision-number-bg-color);
+}
+.geo-suggest-wrapper .geo-suggest-coords[data-precision="near"] .coord-value {
+    background-color: var(--geo-precision-near-bg-color);
+}
+.geo-suggest-wrapper .geo-suggest-coords[data-precision="range"] .coord-value {
+    background-color: var(--geo-precision-range-bg-color);
+}
+.geo-suggest-wrapper .geo-suggest-coords[data-precision="street"] .coord-value {
+    background-color: var(--geo-precision-street-bg-color);
+}
+.geo-suggest-wrapper .geo-suggest-coords[data-precision="other"] .coord-value {
+    background-color: var(--geo-precision-other-bg-color);
+}
+.geo-suggest-wrapper .geo-suggest-coords .form-control.wrap {
+    padding: 0;
+    margin: 0 !important;
+    border: none;
+}
+.geo-suggest-wrapper .geo-suggest-coords .form-control.wrap .form-control{
+    margin-left: -1px;
+}
+.geo-suggest-wrapper .geo-suggest-coords .form-control.wrap .help-block{
+    position: absolute;
+    bottom: -20px;
+    left: 0;
+    width: 100%;
+    font-size: 12px;
+    padding-left: 10px;
+}
+.geo-suggest-wrapper .geo-suggest-precision-info {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 5px;
+}
+.geo-suggest-wrapper .geo-suggest-precision-info .item {
+    display: flex;
+    margin: 0 10px 5px 0;
+    align-items: center;
+    font-size: 12px;
+}
+.geo-suggest-wrapper .geo-suggest-precision-info .item .color{
+    height: 14px;
+    width: 14px;
+    display: inline-block;
+}
+.geo-suggest-wrapper .geo-suggest-precision-info .item .text{
+    padding: 0 5px;
+    cursor: default;
+}
+.geo-suggest-wrapper .geo-suggest-precision-info .item.precision-exact .color,
+.geo-suggest-wrapper .geo-suggest-precision-info .item.precision-exact:hover {
+    background-color: var(--geo-precision-exact-bg-color);
+}
+.geo-suggest-wrapper .geo-suggest-precision-info .item.precision-number .color,
+.geo-suggest-wrapper .geo-suggest-precision-info .item.precision-number:hover{
+    background-color: var(--geo-precision-number-bg-color);
+}
+.geo-suggest-wrapper .geo-suggest-precision-info .item.precision-near .color,
+.geo-suggest-wrapper .geo-suggest-precision-info .item.precision-near:hover {
+    background-color: var(--geo-precision-near-bg-color);
+}
+.geo-suggest-wrapper .geo-suggest-precision-info .item.precision-range .color,
+.geo-suggest-wrapper .geo-suggest-precision-info .item.precision-range:hover {
+    background-color: var(--geo-precision-range-bg-color);
+}
+.geo-suggest-wrapper .geo-suggest-precision-info .item.precision-street .color,
+.geo-suggest-wrapper .geo-suggest-precision-info .item.precision-street:hover {
+    background-color: var(--geo-precision-street-bg-color);
+}
+.geo-suggest-wrapper .geo-suggest-precision-info .item.precision-other .color,
+.geo-suggest-wrapper .geo-suggest-precision-info .item.precision-other:hover {
+    background-color: var(--geo-precision-other-bg-color);
+}
+
+.geo-suggest-modal-map .map-address{
+    text-align: center;
+    margin-bottom: 5px;
+    font-size: 16px;
+}
+.geo-suggest-modal-map .map-coordinates{
+    text-align: center;
+    margin-bottom: 30px;
+}
+.geo-suggest-modal-map .map-coordinates .item{
+    margin: 0 10px;
+    display: inline-block;
+}
+.geo-suggest-modal-map .map-coordinates .item .label{
+    font-weight: 600;
+    margin-right: 5px;
+}
+.geo-suggest-modal-map .map-coordinates .item .label::after{
+    content: ":";
+    display: inline-block;
+}
+.geo-suggest-modal-map .map-container{
+    min-height: 500px;
+    height: 500px;
+    width: 100%;
+    position: relative;
+}
+.geo-suggest-modal-map .map-container .marker-container{
+    position: relative;
+}
+.geo-suggest-modal-map .map-container .marker-container .marker-inner {
+    position: absolute;
+    bottom: 0;
+    left: -25px;
+    background-image: url(../img/map-marker.png);
+    background-repeat: no-repeat;
+    background-size: contain;
+    height: 50px;
+    width: 50px;
+}
+
