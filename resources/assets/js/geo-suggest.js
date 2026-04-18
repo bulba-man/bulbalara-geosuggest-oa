@@ -21,6 +21,14 @@ class GeoSuggest {
         this.mapLngInput = HTMLInputElement;
         this.mapSaveBut = HTMLButtonElement;
 
+        this.regionStateField = HTMLSelectElement;
+        this.regionStateChoices = null;
+        this.regionDistrictField = HTMLSelectElement;
+        this.regionDistrictChoices = null;
+        this.regionCityField = HTMLSelectElement;
+        this.regionCityChoices = null;
+        this.selectedAddressValues = {};
+
         this.map = null;
 
         this.filledFlag = false;
@@ -51,6 +59,9 @@ class GeoSuggest {
             withMap: false,
             withCoordinates: false,
             showPrecision: false,
+            stateFieldName: null,
+            districtFieldName: null,
+            cityFieldName: null,
             modalMapSelector: '.geo-suggest-modal-map',
             modalMapOptions: {
                 backdrop: 'static',
@@ -166,6 +177,36 @@ class GeoSuggest {
                 this._initNode('mapSaveBut', '.save-geo-data', this.mapModal);
             }
         }
+
+        if (this.config.stateFieldName) {
+            this._initNode('regionStateField', '[name="'+this.config.stateFieldName+'"]');
+            if (this.regionStateField && this.regionStateField.parentElement.classList.contains('choices__inner')) {
+                var stateChoicesWrap = this.regionStateField.parentElement.parentElement;
+                if (window.hasOwnProperty('choices_vars') && window.choices_vars.hasOwnProperty(stateChoicesWrap.className.replace(/[ -]/g, "_"))) {
+                    this.regionStateChoices = window.choices_vars[stateChoicesWrap.className.replace(/[ -]/g, "_")];
+                }
+            }
+        }
+
+        if (this.config.districtFieldName) {
+            this._initNode('regionDistrictField', '[name="'+this.config.districtFieldName+'"]');
+            if (this.regionDistrictField && this.regionDistrictField.parentElement.classList.contains('choices__inner')) {
+                var districtChoicesWrap = this.regionDistrictField.parentElement.parentElement;
+                if (window.hasOwnProperty('choices_vars') && window.choices_vars.hasOwnProperty(districtChoicesWrap.className.replace(/[ -]/g, "_"))) {
+                    this.regionDistrictChoices = window.choices_vars[districtChoicesWrap.className.replace(/[ -]/g, "_")];
+                }
+            }
+        }
+
+        if (this.config.cityFieldName) {
+            this._initNode('regionCityField', '[name="'+this.config.cityFieldName+'"]');
+            if (this.regionCityField && this.regionCityField.parentElement.classList.contains('choices__inner')) {
+                var cityChoicesWrap = this.regionCityField.parentElement.parentElement;
+                if (window.hasOwnProperty('choices_vars') && window.choices_vars.hasOwnProperty(cityChoicesWrap.className.replace(/[ -]/g, "_"))) {
+                    this.regionCityChoices = window.choices_vars[cityChoicesWrap.className.replace(/[ -]/g, "_")];
+                }
+            }
+        }
     }
 
     _registerObservers() {
@@ -179,10 +220,12 @@ class GeoSuggest {
             if (this.coordLat) {
                 this.coordLat.addEventListener('input', (event) => this.onLatInputObserver(event));
                 this.coordLat.addEventListener('keydown', (event) => this.onCoordkeydownObserver(event));
+                this.coordLat.addEventListener('paste', (event) => this.onCoordPasteObserver(event));
             }
             if (this.coordLng) {
                 this.coordLng.addEventListener('input', (event) => this.onLngInputObserver(event));
                 this.coordLng.addEventListener('keydown', (event) => this.onCoordkeydownObserver(event));
+                this.coordLng.addEventListener('paste', (event) => this.onCoordPasteObserver(event));
             }
             if (this.findAddressBut) {
                 this.findAddressBut.addEventListener('click', (event) => this.findAddressObserver(event));
@@ -206,6 +249,28 @@ class GeoSuggest {
             if (this.mapSaveBut) {
                 this.mapSaveBut.addEventListener('click', (event) => this.onClickModalSaveBut(event));
             }
+        }
+
+        if (this.regionDistrictField) {
+            this.regionDistrictField.addEventListener('choices:loaded', (event) => this.onDistrictChoicesLoaded(event));
+        }
+
+        if (this.regionCityField) {
+            this.regionCityField.addEventListener('choices:loaded', (event) => this.onCityChoicesLoaded(event));
+        }
+    }
+
+    onDistrictChoicesLoaded(event) {
+        this.fillRegionField(this.regionDistrictField, this.selectedAddressValues.district, this.regionDistrictChoices);
+        if (this.hasOwnProperty('spinnerRegionFieldsLoad') && !this.selectedAddressValues.city) {
+            this.spinnerRegionFieldsLoad.remove();
+        }
+    }
+
+    onCityChoicesLoaded(event) {
+        this.fillRegionField(this.regionCityField, this.cleanLocality(this.selectedAddressValues.city), this.regionCityChoices);
+        if (this.hasOwnProperty('spinnerRegionFieldsLoad')) {
+            this.spinnerRegionFieldsLoad.remove();
         }
     }
 
@@ -241,6 +306,22 @@ class GeoSuggest {
         this.validateLngField(event.target);
     }
 
+    onCoordPasteObserver(event) {
+        var clipboardData = event.clipboardData || window.clipboardData;
+        var pastedData = clipboardData.getData('text');
+
+        var coords = pastedData.split(',');
+        if (coords.length === 2) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            this.coordLat.value = coords[0].replace(/,/g, '.').replace(/\s/g,'');
+            this.coordLng.value = coords[1].replace(/,/g, '.').replace(/\s/g,'');
+            this.validateLatField(event.target);
+            this.validateLngField(event.target);
+        }
+    }
+
     findAddressObserver(event) {
         event.preventDefault();
 
@@ -256,11 +337,58 @@ class GeoSuggest {
             e.target.dataset.precision = '';
         }
 
+        var sr = e.target.value;
+        var srPrefix = '';
+
         if (e.target.value.length >= this.config.minSearchLen) {
+            if (this.regionStateField) {
+                var stateValue = this.extractValueFromField(this.regionStateField);
+                if (stateValue.length) {
+                    sr = sr.replace(stateValue + ', ', '');
+                    srPrefix = stateValue + ', ';
+                }
+            }
+
+            if (this.regionDistrictField) {
+                var districtValue = this.extractValueFromField(this.regionDistrictField);
+                if (districtValue.length) {
+                    sr = sr.replace(districtValue + ', ', '');
+                    srPrefix += districtValue + ', ';
+                }
+            }
+
+            if (this.regionCityField) {
+                var cityValue = this.extractValueFromField(this.regionCityField);
+                if (cityValue.length && !sr.toLowerCase().includes(cityValue.toLowerCase())) {
+                    srPrefix += cityValue + ', ';
+                }
+            }
+
+            if (srPrefix.length) {
+                sr = srPrefix + sr;
+            }
+
             this.filledFlag = false;
             this.list.classList.add('show');
-            this.searchRequest(e.target.value);
+            this.searchRequest(sr);
         }
+    }
+
+    extractValueFromField(field) {
+        var value = '';
+
+        if (field.type === 'select-one' && field.selectedIndex >= 0) {
+            value = field.options[field.selectedIndex]?.text;
+        } else if (field.type === 'select-multiple') {
+            var selectedOptions = field.selectedOptions;
+            for (var i = 0; i < selectedOptions.length; i++) {
+                value += selectedOptions[i].text + ',';
+            }
+        } else {
+            value = field.value;
+        }
+
+        return value;
     }
 
     onModalMapShown(e) {
@@ -348,8 +476,62 @@ class GeoSuggest {
                 var sugText = '';
                 if (suggest.hasOwnProperty('address') && suggest.address.hasOwnProperty('formatted_address')) {
                     li.textContent = suggest.address.formatted_address;
+                    li.dataset.searchValue = suggest.address.formatted_address;
                 } else {
                     li.textContent = suggest.title.text;
+                    li.dataset.searchValue = suggest.title.text;
+                }
+
+                if (suggest.hasOwnProperty('address') && suggest.address.hasOwnProperty('component')) {
+                    var stateHandled = false;
+                    var districtHandled = false;
+                    var cityHandled = false;
+                    var fValue = '';
+                    suggest.address.component.forEach((item) => {
+                        if (item.kind[0] === "COUNTRY") {
+                            return;
+                        }
+
+                        if (item.kind[0] === "PROVINCE") {
+                            if (!stateHandled) {
+                                li.dataset.addressState = item.name;
+                                fValue += item.name + ', ';
+                                stateHandled = true;
+                            }
+
+                            return;
+                        }
+
+                        if (item.kind[0] === "AREA") {
+                            if (!districtHandled) {
+                                li.dataset.addressDistrict = item.name;
+                                fValue += item.name + ', ';
+                                districtHandled = true;
+                            }
+
+                            return;
+                        }
+
+                        if (item.kind[0] === "LOCALITY") {
+                            if (!cityHandled) {
+                                li.dataset.addressCity = item.name;
+                                fValue += item.name + ', ';
+                                cityHandled = true;
+                            }
+
+                            return;
+                        }
+
+                        fValue += item.name + ', ';
+                    });
+
+                    fValue = fValue.replace(/,\s*$/, '');
+                    li.dataset.searchValue = fValue;
+                }
+
+                if (suggest.hasOwnProperty('distance')) {
+                    li.dataset.distance = suggest.distance.text;
+                    li.setAttribute('title', suggest.distance.text)
                 }
 
                 if (suggest.hasOwnProperty('uri')) {
@@ -359,16 +541,17 @@ class GeoSuggest {
                 li.addEventListener("click", function(e) {
                     self.filledFlag = true;
                     self.list.classList.remove('show');
-                    self.fillSearchField(e.target.textContent);
 
-                    if (self.config.withCoordinates && e.target.dataset.hasOwnProperty('uri')) {
+                    if (e.target.dataset.hasOwnProperty('uri')) {
                         var uri = e.target.dataset.uri;
                         self.geoCodeRequestByUri(uri, self.processGeoCode.bind(self));
                     }
 
                     if (self.config.withMap && self.mapAddressInput) {
-                        self.mapAddressInput.value = e.target.textContent;
+                        self.mapAddressInput.value = e.target.dataset.searchValue;
                     }
+
+                    self.fillSearchField(e.target.dataset.searchValue);
                 });
 
                 list.appendChild(li);
@@ -377,6 +560,33 @@ class GeoSuggest {
 
         this.list.innerHTML = '';
         this.list.appendChild(list);
+    }
+
+    fillRegionField(field, value, fieldChoices) {
+        if (field.type === 'select-one') {
+            var fieldValue = '';
+            var fieldOptions = field.options;
+            for (var i = 0; i < fieldOptions.length; i++) {
+                if (fieldOptions[i].text === value) {
+                    fieldValue = fieldOptions[i].value;
+                    field.selectedIndex = i;
+                    break;
+                }
+            }
+
+            if (fieldChoices) {
+                var currentChoices = fieldChoices.getValue();
+                if (currentChoices?.label !== value) {
+                    fieldChoices.setChoiceByValue(fieldValue);
+                }
+
+                fieldChoices.passedElement.element.dispatchEvent(
+                    new Event('change', { bubbles: true })
+                );
+            }
+        } else {
+            field.value = value;
+        }
     }
 
     fillCoords(lat, lng, precision = '') {
@@ -454,40 +664,128 @@ class GeoSuggest {
     processGeoCode(response) {
         var item = this.getFirstGeoObject(response);
 
-        if (!item.hasOwnProperty('GeoObject') || !item.GeoObject.hasOwnProperty('Point')) {
+        var pos = item?.GeoObject?.Point?.pos;
+        if (pos && this.config.withCoordinates) {
+            var coords = pos.split(' ');
+            var lng = coords[0];
+            var lat = coords[1];
+
+            var precision = item?.GeoObject?.metaDataProperty?.GeocoderMetaData?.precision;
+
+            this.fillCoords(lat, lng, precision ? precision : '');
+        }
+
+        var addressComponents = item?.GeoObject?.metaDataProperty?.GeocoderMetaData?.Address?.Components;
+        if (!addressComponents || !addressComponents.length) {
             return;
         }
 
-        var pos = item.GeoObject.Point.pos;
-        var coords = pos.split(' ');
-        var lng = coords[0];
-        var lat = coords[1];
-
-        var precision = '';
-
-        if (item.GeoObject.hasOwnProperty('metaDataProperty') && item.GeoObject.metaDataProperty.hasOwnProperty('GeocoderMetaData')) {
-            if (item.GeoObject.metaDataProperty.GeocoderMetaData.hasOwnProperty('precision')) {
-                precision = item.GeoObject.metaDataProperty.GeocoderMetaData.precision;
+        var state = "";
+        var district = "";
+        var city = "";
+        addressComponents.forEach((item) => {
+            if (item.kind === "province" && !state.length) {
+                state = item.name;
+                return;
             }
+
+            if (item.kind === "area" && !district.length) {
+                district = item.name;
+                return;
+            }
+
+            if (item.kind === "locality" && !city.length) {
+                city = item.name;
+                return;
+            }
+        });
+
+        this.selectedAddressValues = {
+            state: state,
+            district: district,
+            city: city
         }
 
-        this.fillCoords(lat, lng, precision);
+        if (this.regionStateField && state.length) {
+            if (typeof makeSpinner === "function") {
+                this.spinnerRegionFieldsLoad = makeSpinner();
+                document.querySelector('#main')?.appendChild(this.spinnerRegionFieldsLoad);
+            }
+
+            this.fillRegionField(this.regionStateField, state, this.regionStateChoices);
+        }
     }
 
     getAddressFromGeoObject(geoObject) {
-        if (!geoObject.hasOwnProperty('GeoObject') || !geoObject.GeoObject.hasOwnProperty('metaDataProperty')) {
-            return;
+        var geocodeMetaData = geoObject?.GeoObject?.metaDataProperty?.GeocoderMetaData;
+        if (!geocodeMetaData) {
+            return {};
         }
 
-        var metaData = geoObject.GeoObject.metaDataProperty;
+        var address = '';
 
-        if (!metaData.hasOwnProperty('GeocoderMetaData') || !metaData.GeocoderMetaData.hasOwnProperty('text')) {
-            return;
+        var addressComponents = geocodeMetaData?.Address?.Components;
+        if (addressComponents && addressComponents.length) {
+
+            var stateHandled = false;
+            var districtHandled = false;
+            var cityHandled = false;
+
+            var state = "";
+            var district = "";
+            var city = "";
+
+            addressComponents.forEach((item) => {
+                if (item.kind === "country") {
+                    return;
+                }
+
+                if (item.kind === "province") {
+                    if (!stateHandled) {
+                        address += item.name + ', ';
+                        state = item.name;
+                        stateHandled = true;
+                    }
+
+                    return;
+                }
+
+                if (item.kind === "area") {
+                    if (!districtHandled) {
+                        address += item.name + ', ';
+                        district = item.name;
+                        districtHandled = true;
+                    }
+
+                    return;
+                }
+
+                if (item.kind === "locality") {
+                    if (!cityHandled) {
+                        address += item.name + ', ';
+                        city = item.name;
+                        cityHandled = true;
+                    }
+
+                    return;
+                }
+
+                address += item.name + ', ';
+            });
+
+            address = address.replace(/,\s*$/, '');
+
+        } else {
+            address = geocodeMetaData?.text;
         }
 
         return {
-            address: metaData.GeocoderMetaData.text,
-            precision: metaData.GeocoderMetaData.precision
+            address: address,
+            precision: geocodeMetaData?.precision,
+            state: state,
+            district: district,
+            city: city,
+
         };
     }
 
@@ -495,7 +793,17 @@ class GeoSuggest {
         var item = this.getFirstGeoObject(response);
         var adrData = this.getAddressFromGeoObject(item);
 
-        this.fillSearchField(adrData.address, adrData.precision);
+        this.fillSearchField(adrData?.address, adrData?.precision);
+
+        this.selectedAddressValues = {
+            state: adrData?.state,
+            district: adrData?.district,
+            city: adrData?.city
+        }
+
+        if (this.regionStateField && adrData?.state.length) {
+            this.fillRegionField(this.regionStateField, adrData?.state, this.regionStateChoices);
+        }
     }
 
     getGeoCodeApiParams() {
@@ -535,9 +843,17 @@ class GeoSuggest {
             });
     }
 
-    geoCodeRequest(code, callback) {
+    geoCodeRequest(code, callback, params) {
         var apiUrl = this.getGeoCodeApiUrl();
         apiUrl.searchParams.append('geocode', code);
+
+        if (params) {
+            for (var key in params) {
+                if (params.hasOwnProperty(key)) {
+                    apiUrl.searchParams.set(key, params[key]);
+                }
+            }
+        }
 
         fetch(apiUrl.toString())
             .then((response) => {
@@ -602,6 +918,7 @@ class GeoSuggest {
 
         this.mapEntities.YMapDefaultSchemeLayer = new YMapDefaultSchemeLayer();
         this.mapEntities.YMapDefaultFeaturesLayer = new YMapDefaultFeaturesLayer();
+        this.mapEntities.YMapFeature = YMapFeature;
 
         this.map.addChild(this.mapEntities.YMapDefaultSchemeLayer);
         this.map.addChild(this.mapEntities.YMapDefaultFeaturesLayer);
@@ -775,6 +1092,11 @@ class GeoSuggest {
             for (var i = 0; hooks[i] && i < hooks.length; i++)
                 hooks[i](this, data);
         }
+    }
+
+    cleanLocality(text) {
+        const regex = /^(аг\.|агрогородок|г\.п\.|гп|горпос[её]лок|р\.п\.|рп|рабпос[её]лок|к\.п\.|курортный\s+пос[её]лок|городской\s+пос[её]лок|г\.|город|пос\.|п\.|пос[её]лок|дер\.|д\.|деревня|в\.|село|с\.|х\.?|хутор|ст\.|станция)\s+/i
+        return text?.replace(regex, '').trim();
     }
 
     _randomString(length) {
