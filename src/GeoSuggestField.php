@@ -86,6 +86,27 @@ class GeoSuggestField extends Field
         return $this;
     }
 
+    public function useStateField(string $fieldName)
+    {
+        $this->config['stateFieldName'] = $fieldName;
+
+        return $this;
+    }
+
+    public function useDistrictField(string $fieldName)
+    {
+        $this->config['districtFieldName'] = $fieldName;
+
+        return $this;
+    }
+
+    public function useCityField(string $fieldName)
+    {
+        $this->config['cityFieldName'] = $fieldName;
+
+        return $this;
+    }
+
     public function showPrecision($showPrecision = true)
     {
         $this->showPrecision = $showPrecision;

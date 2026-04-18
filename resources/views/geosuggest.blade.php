@@ -16,9 +16,9 @@
 
 <div class="input-group geo-suggest-wrapper @if($asTextarea) view-textarea @endif">
     @if($asTextarea)
-        <textarea name="{{$name['address']}}" id="{{$id['address']}}" class="form-control geo-suggest-field {{$class['address']}}" autocomplete="off" {!! $attributes !!} >{{ old($column['address'], $value['address'] ?? null) }}</textarea>
+        <textarea name="{{$name['address']}}" id="{{$id['address']}}" class="form-control geo-suggest-field {{$class['address']}}" autocomplete="off" placeholder="{{ $placeholder }}" {!! $attributes !!} >{{ old($column['address'], $value['address'] ?? null) }}</textarea>
     @else
-        <input type="text" name="{{$name['address']}}" id="{{$id['address']}}" value="{{ old($column['address'], $value['address'] ?? null) }}" class="form-control geo-suggest-field {{$class['address']}}" autocomplete="off" {!! $attributes !!} />
+        <input type="text" name="{{$name['address']}}" id="{{$id['address']}}" value="{{ old($column['address'], $value['address'] ?? null) }}" class="form-control geo-suggest-field {{$class['address']}}" autocomplete="off" placeholder="{{ $placeholder }}" {!! $attributes !!} />
     @endif
 
     @if ($withMap)
