@@ -694,6 +694,9 @@ class GeoSuggest {
 
             if (item.kind === "area" && !district.length) {
                 district = item.name;
+                if (district.toLowerCase().includes('город областного подчинения')) {
+                    district = district.replace('город областного подчинения', '').trim() + ' город'
+                }
                 return;
             }
 
