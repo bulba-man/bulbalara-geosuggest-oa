@@ -21,13 +21,14 @@ class GeoSuggest {
         this.mapLngInput = HTMLInputElement;
         this.mapSaveBut = HTMLButtonElement;
 
-        this.regionStateField = HTMLSelectElement;
+        this.regionStateField = null;
         this.regionStateChoices = null;
-        this.regionDistrictField = HTMLSelectElement;
+        this.regionDistrictField = null;
         this.regionDistrictChoices = null;
-        this.regionCityField = HTMLSelectElement;
+        this.regionCityField = null;
         this.regionCityChoices = null;
         this.selectedAddressValues = {};
+        this.useLimitSearch = null;
 
         this.map = null;
 
@@ -341,31 +342,33 @@ class GeoSuggest {
         var srPrefix = '';
 
         if (e.target.value.length >= this.config.minSearchLen) {
-            if (this.regionStateField) {
-                var stateValue = this.extractValueFromField(this.regionStateField);
-                if (stateValue.length) {
-                    sr = sr.replace(stateValue + ', ', '');
-                    srPrefix = stateValue + ', ';
+            if (this.useLimitSearch) {
+                if (this.this.regionStateField) {
+                    var stateValue = this.extractValueFromField(this.regionStateField);
+                    if (stateValue.length) {
+                        sr = sr.replace(stateValue + ', ', '');
+                        srPrefix = stateValue + ', ';
+                    }
                 }
-            }
 
-            if (this.regionDistrictField) {
-                var districtValue = this.extractValueFromField(this.regionDistrictField);
-                if (districtValue.length) {
-                    sr = sr.replace(districtValue + ', ', '');
-                    srPrefix += districtValue + ', ';
+                if (this.regionDistrictField) {
+                    var districtValue = this.extractValueFromField(this.regionDistrictField);
+                    if (districtValue.length) {
+                        sr = sr.replace(districtValue + ', ', '');
+                        srPrefix += districtValue + ', ';
+                    }
                 }
-            }
 
-            if (this.regionCityField) {
-                var cityValue = this.extractValueFromField(this.regionCityField);
-                if (cityValue.length && !sr.toLowerCase().includes(cityValue.toLowerCase())) {
-                    srPrefix += cityValue + ', ';
+                if (this.regionCityField) {
+                    var cityValue = this.extractValueFromField(this.regionCityField);
+                    if (cityValue.length && !sr.toLowerCase().includes(cityValue.toLowerCase())) {
+                        srPrefix += cityValue + ', ';
+                    }
                 }
-            }
 
-            if (srPrefix.length) {
-                sr = srPrefix + sr;
+                if (srPrefix.length) {
+                    sr = srPrefix + sr;
+                }
             }
 
             this.filledFlag = false;
