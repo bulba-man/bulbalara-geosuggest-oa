@@ -34,11 +34,11 @@
     <div class="input-group geo-suggest-coords">
         <span class="input-group-text">{{__('bl.geo-sg::lang.coords_label')}}</span>
         <div class="form-control wrap">
-            <input type="text" class="form-control coord-value coords-lat" name="{{$name['lat']}}" value="{{ old($column['lat'], $value['lat'] ?? null) }}" placeholder="{{__('bl.geo-sg::lang.lat_label')}}" title="{{__('bl.geo-sg::lang.lat_label')}}">
+            <input type="text" class="form-control coord-value coords-lat" name="{{$name['lat']}}" value="{{ old($column['lat'], $value['lat'] ?? null) }}" placeholder="{{__('bl.geo-sg::lang.lat_label')}}" title="{{__('bl.geo-sg::lang.lat_label')}}" inputmode="numeric">
             <span class="help-block"><i class="icon-info-circle"></i> -90° &ndash; +90°</span>
         </div>
         <div class="form-control wrap">
-            <input type="text" class="form-control coord-value coords-lng" name="{{$name['lng']}}" value="{{ old($column['lng'], $value['lng'] ?? null) }}" placeholder="{{__('bl.geo-sg::lang.lng_label')}}" title="{{__('bl.geo-sg::lang.lng_label')}}">
+            <input type="text" class="form-control coord-value coords-lng" name="{{$name['lng']}}" value="{{ old($column['lng'], $value['lng'] ?? null) }}" placeholder="{{__('bl.geo-sg::lang.lng_label')}}" title="{{__('bl.geo-sg::lang.lng_label')}}" inputmode="numeric">
             <span class="help-block"><i class="icon-info-circle"></i> -180° &ndash; +180°</span>
         </div>
         <button class="btn btn-outline-secondary find-address" type="button" data-bs-toggle="tooltip" title="{{__('bl.geo-sg::lang.coord_search_text')}}"><i class="fas icon-location-arrow"></i></button>
