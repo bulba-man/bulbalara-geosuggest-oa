@@ -25,6 +25,7 @@ class GeoSuggest {
         this.regionDistrictField = null;
         this.regionCityField = null;
         this.selectedAddressValues = {};
+        this.mapAddressValues = {};
         this.useLimitSearch = null;
 
         this.map = null;
@@ -557,9 +558,25 @@ class GeoSuggest {
             }
 
             if (fieldChoices) {
-                var currentChoices = fieldChoices.getValue();
-                if (currentChoices?.label !== value) {
-                    fieldChoices.setChoiceByValue(fieldValue);
+                if (fieldValue.length) {
+                    var currentChoices = fieldChoices.getValue();
+                    if (currentChoices?.label !== value) {
+                        fieldChoices.setChoiceByValue(fieldValue);
+                    }
+                } else if (fieldChoices.config.addChoices && fieldChoices.config.addItems) {
+                    fieldChoices.setChoices(
+                        [
+                            {
+                                id: value,
+                                text: value,
+                                selected: true,
+                                disabled: false,
+                            },
+                        ],
+                        'id',
+                        'text',
+                        false
+                    );
                 }
 
                 fieldChoices.passedElement.element.dispatchEvent(
@@ -568,6 +585,17 @@ class GeoSuggest {
             }
         } else {
             field.value = value;
+        }
+    }
+
+    setMainRegionField() {
+        if (this.regionStateField && this.selectedAddressValues.state.length) {
+            if (typeof makeSpinner === "function") {
+                this.spinnerRegionFieldsLoad = makeSpinner();
+                document.querySelector('#main')?.appendChild(this.spinnerRegionFieldsLoad);
+            }
+
+            this.fillRegionField(this.regionStateField, this.selectedAddressValues.state, this.getChoicesObj(this.regionStateField));
         }
     }
 
@@ -657,48 +685,10 @@ class GeoSuggest {
             this.fillCoords(lat, lng, precision ? precision : '');
         }
 
-        var addressComponents = item?.GeoObject?.metaDataProperty?.GeocoderMetaData?.Address?.Components;
-        if (!addressComponents || !addressComponents.length) {
-            return;
-        }
+        this.selectedAddressValues = this.getAddressFromGeoObject(item);
+        this.mapAddressValues = this.selectedAddressValues;
 
-        var state = "";
-        var district = "";
-        var city = "";
-        addressComponents.forEach((item) => {
-            if (item.kind === "province" && !state.length) {
-                state = item.name;
-                return;
-            }
-
-            if (item.kind === "area" && !district.length) {
-                district = item.name;
-                if (district.toLowerCase().includes('город областного подчинения')) {
-                    district = district.replace('город областного подчинения', '').trim() + ' город'
-                }
-                return;
-            }
-
-            if (item.kind === "locality" && !city.length) {
-                city = item.name;
-                return;
-            }
-        });
-
-        this.selectedAddressValues = {
-            state: state,
-            district: district,
-            city: city
-        }
-
-        if (this.regionStateField && state.length) {
-            if (typeof makeSpinner === "function") {
-                this.spinnerRegionFieldsLoad = makeSpinner();
-                document.querySelector('#main')?.appendChild(this.spinnerRegionFieldsLoad);
-            }
-
-            this.fillRegionField(this.regionStateField, state, this.getChoicesObj(this.regionStateField));
-        }
+        this.setMainRegionField();
     }
 
     getAddressFromGeoObject(geoObject) {
@@ -737,8 +727,13 @@ class GeoSuggest {
 
                 if (item.kind === "area") {
                     if (!districtHandled) {
-                        address += item.name + ', ';
                         district = item.name;
+                        if (district.toLowerCase().includes('город областного подчинения')) {
+                            district = district.replace('город областного подчинения', '').trim() + ' город'
+                        } else {
+                            address += item.name + ', ';
+                        }
+
                         districtHandled = true;
                     }
 
@@ -1019,9 +1014,9 @@ class GeoSuggest {
 
     processGeoDecodeForMap(response) {
         var item = this.getFirstGeoObject(response);
-        var adrData = this.getAddressFromGeoObject(item);
+        this.mapAddressValues = this.getAddressFromGeoObject(item);
 
-        this.mapAddressInput.value = adrData.address;
+        this.mapAddressInput.value = this.mapAddressValues.address;
     }
 
     satMapCoordValues(coordinates) {
@@ -1035,6 +1030,10 @@ class GeoSuggest {
         this.searchField.value = this.mapAddressInput.value;
         this.coordLat.value = this.mapLatInput.value
         this.coordLng.value = this.mapLngInput.value
+
+        this.selectedAddressValues = this.mapAddressValues;
+
+        this.setMainRegionField();
     }
 
     resizeMap() {
