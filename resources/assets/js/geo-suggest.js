@@ -22,11 +22,8 @@ class GeoSuggest {
         this.mapSaveBut = HTMLButtonElement;
 
         this.regionStateField = null;
-        this.regionStateChoices = null;
         this.regionDistrictField = null;
-        this.regionDistrictChoices = null;
         this.regionCityField = null;
-        this.regionCityChoices = null;
         this.selectedAddressValues = {};
         this.useLimitSearch = null;
 
@@ -181,32 +178,14 @@ class GeoSuggest {
 
         if (this.config.stateFieldName) {
             this._initNode('regionStateField', '[name="'+this.config.stateFieldName+'"]');
-            if (this.regionStateField && this.regionStateField.parentElement.classList.contains('choices__inner')) {
-                var stateChoicesWrap = this.regionStateField.parentElement.parentElement;
-                if (window.hasOwnProperty('choices_vars') && window.choices_vars.hasOwnProperty(stateChoicesWrap.className.replace(/[ -]/g, "_"))) {
-                    this.regionStateChoices = window.choices_vars[stateChoicesWrap.className.replace(/[ -]/g, "_")];
-                }
-            }
         }
 
         if (this.config.districtFieldName) {
             this._initNode('regionDistrictField', '[name="'+this.config.districtFieldName+'"]');
-            if (this.regionDistrictField && this.regionDistrictField.parentElement.classList.contains('choices__inner')) {
-                var districtChoicesWrap = this.regionDistrictField.parentElement.parentElement;
-                if (window.hasOwnProperty('choices_vars') && window.choices_vars.hasOwnProperty(districtChoicesWrap.className.replace(/[ -]/g, "_"))) {
-                    this.regionDistrictChoices = window.choices_vars[districtChoicesWrap.className.replace(/[ -]/g, "_")];
-                }
-            }
         }
 
         if (this.config.cityFieldName) {
             this._initNode('regionCityField', '[name="'+this.config.cityFieldName+'"]');
-            if (this.regionCityField && this.regionCityField.parentElement.classList.contains('choices__inner')) {
-                var cityChoicesWrap = this.regionCityField.parentElement.parentElement;
-                if (window.hasOwnProperty('choices_vars') && window.choices_vars.hasOwnProperty(cityChoicesWrap.className.replace(/[ -]/g, "_"))) {
-                    this.regionCityChoices = window.choices_vars[cityChoicesWrap.className.replace(/[ -]/g, "_")];
-                }
-            }
         }
     }
 
@@ -262,14 +241,14 @@ class GeoSuggest {
     }
 
     onDistrictChoicesLoaded(event) {
-        this.fillRegionField(this.regionDistrictField, this.selectedAddressValues.district, this.regionDistrictChoices);
+        this.fillRegionField(this.regionDistrictField, this.selectedAddressValues.district, this.getChoicesObj(this.regionDistrictField));
         if (this.hasOwnProperty('spinnerRegionFieldsLoad') && !this.selectedAddressValues.city) {
             this.spinnerRegionFieldsLoad.remove();
         }
     }
 
     onCityChoicesLoaded(event) {
-        this.fillRegionField(this.regionCityField, this.cleanLocality(this.selectedAddressValues.city), this.regionCityChoices);
+        this.fillRegionField(this.regionCityField, this.cleanLocality(this.selectedAddressValues.city), this.getChoicesObj(this.regionCityField));
         if (this.hasOwnProperty('spinnerRegionFieldsLoad')) {
             this.spinnerRegionFieldsLoad.remove();
         }
@@ -718,7 +697,7 @@ class GeoSuggest {
                 document.querySelector('#main')?.appendChild(this.spinnerRegionFieldsLoad);
             }
 
-            this.fillRegionField(this.regionStateField, state, this.regionStateChoices);
+            this.fillRegionField(this.regionStateField, state, this.getChoicesObj(this.regionStateField));
         }
     }
 
@@ -808,7 +787,7 @@ class GeoSuggest {
         }
 
         if (this.regionStateField && adrData?.state.length) {
-            this.fillRegionField(this.regionStateField, adrData?.state, this.regionStateChoices);
+            this.fillRegionField(this.regionStateField, adrData?.state, this.getChoicesObj(this.regionStateField));
         }
     }
 
@@ -1097,6 +1076,14 @@ class GeoSuggest {
         if (hooks !== undefined && hooks.length > 0) {
             for (var i = 0; hooks[i] && i < hooks.length; i++)
                 hooks[i](this, data);
+        }
+    }
+
+    getChoicesObj(elem) {
+        if (elem?.hasAttribute('data-choices-obj-name')) {
+            if (window?.choices_vars.hasOwnProperty(elem?.dataset?.choicesObjName)) {
+                return window?.choices_vars[elem?.dataset?.choicesObjName];
+            }
         }
     }
 
