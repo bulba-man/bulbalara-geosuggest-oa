@@ -702,21 +702,29 @@ class GeoSuggest {
         var addressComponents = geocodeMetaData?.Address?.Components;
         if (addressComponents && addressComponents.length) {
 
+            var countryHandled = false;
             var stateHandled = false;
             var districtHandled = false;
             var cityHandled = false;
 
+            var country = "";
             var state = "";
             var district = "";
             var city = "";
 
             addressComponents.forEach((item) => {
                 if (item.kind === "country") {
+                    if (!countryHandled) {
+                        country = item.name;
+
+                        countryHandled = true;
+                    }
+
                     return;
                 }
 
                 if (item.kind === "province") {
-                    if (!stateHandled) {
+                    if (!stateHandled && item.name.toLowerCase().includes('область')) {
                         address += item.name + ', ';
                         state = item.name;
                         stateHandled = true;
@@ -765,7 +773,7 @@ class GeoSuggest {
             state: state,
             district: district,
             city: city,
-
+            country: country,
         };
     }
 
@@ -778,7 +786,8 @@ class GeoSuggest {
         this.selectedAddressValues = {
             state: adrData?.state,
             district: adrData?.district,
-            city: adrData?.city
+            city: adrData?.city,
+            country: adrData?.country
         }
 
         if (this.regionStateField && adrData?.state.length) {
